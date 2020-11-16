@@ -1,211 +1,192 @@
-import sys
-
 class Vertex:
-
-	# color is some number, with 0 being uncolored
-	def __init__(self, name, color=0):
-		self.name = name
-		self.color = color
-
-	def __repr__(self):
-		return str(self.name)
+    def __init__(self, name,colour = 0):
+        self.name = name
+        self.colour = colour
+    def __repr__(self):
+        return("Vertex:"+str(self.name)+" Colour: "+str(self.colour))
 
 class Edge:
-	def __init__(self, v1, v2, weight=1):
-		self.v1 = v1
-		self.v2 = v2
-		self.weight = weight
-
-	def __repr__(self):
-		return "\nedge: " + self.v1.name + ":" + str(self.v1.color) + " " + self.v2.name + ":" + str(self.v2.color) + " weight:" + str(self.weight)
+    def __init__(self, v1, v2, weight=1):
+        self.a = v1
+        self.b = v2
+        self.weight = weight
+    def __repr__(self):
+        return("Edge between " + str(self.a) +" " + str(self.b) + " Weight: " + str(self.weight))
 
 class Graph:
+    def __init__(self, V, E):
+        self.Vertices = V
+        self.Edges = E
 
-	# V is set of vertices, E is set of edges
-	def __init__(self, V, E):
-		self.V = V
-		self.E = E
+    def Neighbours(self, v):
+        neighbours = set()
+        for edge in self.Edges:
+            if edge.a == v:
+                neighbours.update({edge.b})
+            if edge.b == v:
+                neighbours.update({edge.a})
+        return neighbours
 
-	def __repr__(self):
-		string = ""
-		for edge in self.E:
-			string += str(edge)
-		return string
+    def MinEdge(self, v):
+        current_min = None
+        for edge in self.Edges:
+            if edge.a == v or edge.b == v:
+                if current_min == None or edge.weight < current_min.weight:
+                    current_min = edge
+        return current_min
 
-	def Neighbors(self, v):
-		adjacents = set()
-		for edge in self.E:
-			if edge.v1 == v:
-				adjacents.add(edge.v2)
-			elif edge.v2 == v:
-				adjacents.add(edge.v1)
-		return adjacents
+    def RemoveEdge(self, e):
+        self.Edges.remove(e)
 
-	def MinEdge(self, v):
-		# largest integer value
-		min_weight = sys.maxsize
-		min_edge = None
-		for edge in self.E:
-			if edge.weight < min_weight:
-				min_weight = edge.weight
-				min_edge = edge
-		return min_edge
-
-	def RemoveEdge(self, e):
-		self.E.remove(e)
-
-	def RemoveVertex(self, v):
-		self.V.remove(v)
-		for edge in self.E:
-			if edge.v1 == v or edge.v2 == v:
-				self.E.remove(edge)
-
-	def ChromaticNumber(self):
-		num_distinct = set()
-		for vertex in self.V:
-			if vertex.color == 0:
-				print("lmao ur bad the graph isn't done coloring yet")
-				return None
-			else:
-				num_distinct.add(vertex.color)
-		return len(num_distinct)
-
-	def IsValidColoring(self):
-		for edge in self.E:
-			if edge.v1.color == 0 or edge.v2.color == 0:
-				print("lmao ur bad the graph isn't done coloring yet")
-				return None
-			if edge.v1.color == edge.v2.color:
-				return False
-		return True
-
-	def GreedyColor(self):
-		for vertex in self.V:
-			distinct_colors = set()
-			adjacents = self.Neighbors(vertex)
-			for adj in adjacents:
-				distinct_colors.add(adj.color)
-			for i in range(1,len(self.V)):
-				if i not in distinct_colors:
-					vertex.color = i
-					break
-
-	# not done
-	def BruteForce(self):
-		for i in range(len(self.V)):
-			for vertex in self.V:
-				distinct_colors = set()
-				adjacents = self.Neighbors(vertex)
-
-	# Optional problems!!
-
-	def DFS(self, start_vertex, target_vertex):
-		pass
-
-	def IsTree(self):
-		pass
-
-	def IsPlanar(self):
-		pass
-
-	# next(iter(set()))
-	def SpanningTree(self):	
-		discovered = set()
-		T = set()
-		node = next(iter(self.V))
-		frontier = [node]
-		while frontier:
-			if 
+    def RemoveVertex(self, v):
+        self.Vertices.remove(v)
+        newEdges = {}
+        for edge in self.Edges:
+            if not (edge.a == v or edge.b == v):
+                newEdges.update({edge})
+        self.Edges=newEdges
 
 
+    def __repr__(self):
+        return(str(self.Edges) +str(self.Vertices))
 
-		
+    # Optional problems!!
+    def FindParentPath(self,vertex,parents):
+        out_list = []
+        past_state = parents.pop(vertex)
+        while past_state != None:
+            vertex = past_state
+            out_list.insert(0,vertex)
+            past_state = parents.pop(vertex)
+        return out_list
 
-vert = Vertex("a")
-ver = Vertex("b")
-ve = Vertex("c")
-v = Vertex("d")
-ed = Edge(vert, ver, 42)
-edg = Edge(v, ver, 7)
-edgy = Edge(ver, ve)
+    def DFS(self, start_vertex, target_vertex):
+        frontier = [start_vertex]
+        lenFrontier = 1
+        discovered = set({start_vertex})
+        parents = {start_vertex: None}
+        while lenFrontier > 0:
+            current_state = frontier.pop(0)
+            lenFrontier -= 1
+            discovered.add(current_state)
+            if current_state == target_vertex:
+                return self.FindParentPath(current_state,parents)
+            neighbours = self.Neighbours(current_state)
+            if neighbours != None:
+                for vertex in self.Neighbours(current_state):
+                    if vertex not in discovered:
+                        frontier.insert(0,vertex)
+                        lenFrontier += 1
+                        discovered.add(vertex)
+                        parents.update({vertex : current_state})
+        print("Unsolvable.")
 
-print(vert)
-print(ed)
-print(edgy)
-V = {vert, ver, ve, v}
-E = {ed, edg, edgy}
-gra = Graph(V, E)
-print(gra.Neighbors(ve))
-print(gra.MinEdge(ver))
-print(gra.ChromaticNumber())
-print(gra.IsValidColoring())
-gra.GreedyColor()
-print(gra)
+    def ChromaticNumber(self):
+        colourSet = set()
+        for vertex in self.Vertices:
+            if vertex.colour == 0:
+                return None
+            elif vertex.colour not in colourSet:
+                colourSet.add(vertex.colour)
+        return len(colourSet)
 
+    def isValidColouring(self):
+        for edge in self.Edges:
+            if edge.a.colour == edge.b.colour:
+                return False
+        return True
 
-'''
-Create an empty collection of edges T (our tree, to be filled in by our algorithm).
-Keep some auxiliary data structures to track which nodes we've seen already. 
-Start with any vertex. Insert it into a frontier data structure. While the frontier is non-empty, 
-Pop a vertex v from the frontier. 
-If we haven't seen v before, mark it as visited.
-Identify all of the neighbors of v, let these be [n1, n2, … ]
-For each unvisited neighbor ni, insert into T an edge from v to ni.
-Add ni to the frontier.
-When the frontier is empty, we have explored all the nodes, and our T data structure contains a subset of the edges needed to make a spanning tree.
+    def GreedyColour(self):
+        for vertex in self.Vertices:
+            if vertex.colour == 0:
+                done = False
+                neighbourColours = set()
+                current_colour = vertex.colour
+                for edge in self.Edges:
+                    if edge.a == vertex:
+                        neighbourColours.add(edge.b.colour)
+                    elif edge.b == vertex:
+                        neighbourColours.add(edge.a.colour)
+                while not done:
+                    current_colour += 1
+                    if current_colour not in neighbourColours:
+                        vertex.colour = current_colour
+                        done = True
 
-Implement this algorithm as a method on your graph class. It should return a set of edge objects from the original graph. This code should look very familiar...
-'''
-def SpanningTree(self):
-	T = []
-	frontier = self.V
-	discovered = []
-	start = self.V[1]
-	while len(frontier) is not 0:
-		point = frontier.pop(1)
-		if point not in discovered:
-			discovered.append(point)
-			neighbors = point.Neighbors
-			for i in Neighbors:
-				if i is not in discovered:
-					T.append(self.E)
-# next(iter(set()))
-	def SpanningTree(self):	
-		discovered = set()
-		T = set()
-		node = next(iter(self.V))
-		frontier = [node]
-		while frontier:
-			if frontier[0] in discovered:
-				frontier = [node] # go to the next vertex? how? sets?
-			frontier.pop()
-			else:
-				discovered.add(frontier[0])
-				T.add(MinEdge(frontier[0]))			
-				frontier = next(frontier)
+    def BruteForce(self):
+        pass
 
+    def IsTree(self):
+        pass
 
-def DFS(state):
-	frontier = [(0, state)]
-	discovered = set([state])
-	parents = {(0, state): None}
-	path = []
-	while len(frontier) != 0:
-		current_state = frontier.pop(0)
-		discovered.add(current_state[1])
-		if IsGoal(current_state[1]):
-			while parents.get((current_state[0], current_state[1])) != None:
-				path.insert(0, current_state[0])
-				current_state = parents.get((current_state[0], current_state[1]))
-			return path
-		for neighbor in ComputeNeighbors(current_state[1]):
-			if neighbor[1] not in discovered:
-				frontier.insert(0, neighbor)
-				discovered.add(neighbor[1])
-				parents.update({(neighbor[0], neighbor[1]): current_state})
-	print("--FAIL--")
-	return None
+    def IsPlanar(self):
+        pass
+
+    def FindEdge(self,vertexA,vertexB):
+        for edge in self.Edges:
+            if edge.a == vertexA:
+                if edge.b == vertexB:
+                    return edge
+            if edge.b == vertexA:
+                if edge.a == vertexB:
+                    return edge
+        return None
+
+    def SpanningTree(self):
+        start_vertex = next(iter(self.Vertices))
+        frontier = [start_vertex]
+        discovered = set({start_vertex})
+        T = set()
+        while frontier:
+            current_state = frontier.pop(0)
+            discovered.add(current_state)
+            neighbours = self.Neighbours(current_state)
+            if neighbours != None:
+                for vertex in self.Neighbours(current_state):
+                    if vertex not in discovered:
+                        frontier.insert(0,vertex)
+                        discovered.add(vertex)
+                        T.add(self.FindEdge(current_state,vertex))
+        return T
+
+    def PrimMST(self):
+        current_vertex = next(iter(self.Vertices))
+        G = Graph(set({current_vertex}),set())
+        done = False
+        while not done:
+            neighbours = set()
+            for vertex in self.Vertices:
+                if vertex not in G.Vertices:
+                    neighbours.add(vertex)
+                    print(neighbours)
+            if len(neighbours)<=0:
+                done = True
+            if not done:
+                neighbour_edges = set()
+                for vertex in iter(neighbours):
+                    for start_vertex in G.Vertices:
+                        edge = self.FindEdge(vertex,start_vertex)
+                        if edge != None:
+                            neighbour_edges.add(edge)
+                current_min = next(iter(neighbour_edges))
+                for edge in neighbour_edges :
+                    if edge.weight<current_min.weight:
+                        current_min = edge
+                G.Edges.add(current_min)
+                G.Vertices.add(current_min.a)
+                G.Vertices.add(current_min.b)
+        return G.Edges
 
 
 
-	
+
+
+a = Vertex("a")
+b = Vertex("b")
+c = Vertex("c")
+e1 = Edge(a, b, 3)
+e2 = Edge(a, c, 0.5)
+V = {a, b, c} # the vertex set
+E = {e1, e2}
+G = Graph(V, E)
+print(G.PrimMST())
